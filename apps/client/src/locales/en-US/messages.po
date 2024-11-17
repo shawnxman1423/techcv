@@ -1806,3 +1806,32 @@ msgid "month"
 msgstr "month"
 
 
+msgid "Create stylish and impressive resumes for any job"
+msgstr "Create stylish and impressive resumes for any job"
+
+msgid "Access to a wide variety of professional designs"
+msgstr "Access to a wide variety of professional designs"
+
+msgid "Manual and simple resume editing"
+msgstr "Manual and simple resume editing"
+
+msgid "Option to download a high-quality PDF file"
+msgstr "Option to download a high-quality PDF file"
+
+msgid "User-friendly interface with smart editing tools"
+msgstr "User-friendly interface with smart editing tools"
+
+msgid "Create personalized resumes using AI"
+msgstr "Create personalized resumes using AI"
+
+msgid "Precise tailoring for specific jobs based on job description analysis"
+msgstr "Precise tailoring for specific jobs based on job description analysis"
+
+msgid "Access to all advanced designs and features"
+msgstr "Access to all advanced designs and features"
+
+msgid "Continuous updates and system upgrades"
+msgstr "Continuous updates and system upgrades"
+
+msgid "Fast technical support at every stage"
+msgstr "Fast technical support at every stage"
