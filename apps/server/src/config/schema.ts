@@ -84,6 +84,9 @@ export const configSchema = z.object({
 
   // SCRAPIN (LINKEDIN)
   SCRAPIN_API_KEY: z.string().optional(),
+
+  // Anthropic
+  ANTHROPIC_API_KEY: z.string().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;
