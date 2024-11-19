@@ -30,8 +30,8 @@ const steps = [
 ];
 
 export const isValidLinkedinUrl = (url: string): boolean => {
-  // Basic LinkedIn URL validation
-  const linkedinUrlPattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/i;
+  // Updated LinkedIn URL validation that allows for special characters and emojis
+  const linkedinUrlPattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[^/]+\/?$/i;
 
   try {
     const urlObj = new URL(url);
