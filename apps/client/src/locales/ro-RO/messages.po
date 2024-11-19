@@ -1350,7 +1350,7 @@ msgid "Something went wrong while printing your resume. Please try again later o
 msgstr "Ceva nu a funcționat în timpul imprimării reluării dvs. Vă rugăm să încercați din nou mai târziu sau să ridicați o problemă pe GitHub."
 
 #: apps/client/src/services/errors/translate-error.ts:58
-msgid "Something went wrong while processing your request. Please try again later or raise an issue on GitHub."
+msgid "Something went wrong while processing your request. Please try again later or raise an issue."
 msgstr "Ceva nu a mers bine în timpul procesării solicitării dumneavoastră. Vă rugăm să încercați din nou mai târziu sau să ridicați o problemă pe GitHub."
 
 #: apps/client/src/pages/builder/sidebars/left/sections/picture/options.tsx:93

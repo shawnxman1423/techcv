@@ -10,7 +10,6 @@ export const importLinkedinResume = async (data: ImportLinkedinDto) => {
     "/resume/import-linkedin",
     data,
   );
-
   return response.data;
 };
 

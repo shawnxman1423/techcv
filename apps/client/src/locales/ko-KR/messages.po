@@ -1350,7 +1350,7 @@ msgid "Something went wrong while printing your resume. Please try again later o
 msgstr "이력서를 인쇄하는 동안 문제가 발생했습니다. 나중에 다시 시도하거나 GitHub에서 문제를 제기하세요."
 
 #: apps/client/src/services/errors/translate-error.ts:58
-msgid "Something went wrong while processing your request. Please try again later or raise an issue on GitHub."
+msgid "Something went wrong while processing your request. Please try again later or raise an issue."
 msgstr "요청을 처리하는 동안 문제가 발생했습니다. 나중에 다시 시도하거나 GitHub에서 문제를 제기하세요."
 
 #: apps/client/src/pages/builder/sidebars/left/sections/picture/options.tsx:93

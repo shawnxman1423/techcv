@@ -100,9 +100,8 @@ export class ResumeController {
       if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
         throw new BadRequestException(ErrorMessage.ResumeSlugAlreadyExists);
       }
-
-      Logger.error(error);
-      throw new InternalServerErrorException(error);
+      Logger.error("Failed to import LinkedIn profile", error);
+      throw new InternalServerErrorException(ErrorMessage.SomethingWentWrong);
     }
   }
 

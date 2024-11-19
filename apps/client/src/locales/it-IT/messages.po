@@ -1350,7 +1350,7 @@ msgid "Something went wrong while printing your resume. Please try again later o
 msgstr "Qualcosa è andato storto durante la stampa del tuo curriculum. Riprova più tardi o solleva un problema su GitHub."
 
 #: apps/client/src/services/errors/translate-error.ts:58
-msgid "Something went wrong while processing your request. Please try again later or raise an issue on GitHub."
+msgid "Something went wrong while processing your request. Please try again later or raise an issue."
 msgstr "Qualcosa è andato storto durante l'elaborazione della tua richiesta. Riprova più tardi o solleva un problema su GitHub."
 
 #: apps/client/src/pages/builder/sidebars/left/sections/picture/options.tsx:93
