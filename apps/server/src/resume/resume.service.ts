@@ -1,3 +1,4 @@
+import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
 import { HttpService } from "@nestjs/axios";
 import {
@@ -15,7 +16,7 @@ import {
   ImportLinkedinDto,
   ImportResumeDto,
   ResumeDto,
-  UpdateResumeDto,
+  UpdateResumeDto
 } from "@reactive-resume/dto";
 import {
   Basics,
@@ -30,7 +31,7 @@ import {
 } from "@reactive-resume/schema";
 import type { DeepPartial } from "@reactive-resume/utils";
 import { ErrorMessage, generateRandomName, kebabCase } from "@reactive-resume/utils";
-import { generateObject } from "ai";
+import { generateObject, generateText } from "ai";
 import deepmerge from "deepmerge";
 import { PrismaService } from "nestjs-prisma";
 import { z } from "zod";
@@ -198,6 +199,51 @@ export class ResumeService {
         slug: importResumeDto.slug ?? kebabCase(randomTitle),
       },
     });
+  }
+
+  async importFile(userId: string, base64: string, mimetype: string) {
+    // check that file is either an image or a pdf
+    if (!["image/png", "image/jpeg", "application/pdf"].includes(mimetype)) {
+      throw new BadRequestException(ErrorMessage.InvalidFileType);
+    }
+
+    let result;
+
+    if (mimetype === "application/pdf") {
+      const buffer = Buffer.from(base64, "base64");
+      result = await generateText({
+        model: anthropic("claude-3-5-sonnet-20241022"),
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Create a resume from the file.", },
+              { type: "file", data: buffer, mimeType: mimetype, },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (mimetype === "image/png" || mimetype === "image/jpeg") {
+      result = await generateText({
+        model: anthropic("claude-3-5-sonnet-20241022"),
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Create a resume from the file.", },
+              { type: "image", image: base64 },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (!result) throw new BadRequestException(ErrorMessage.InvalidFileType);
+
+    console.log(result.text);
+    return result.text;
   }
 
   async importLinkedin(userId: string, importLinkedinDto: ImportLinkedinDto) {
