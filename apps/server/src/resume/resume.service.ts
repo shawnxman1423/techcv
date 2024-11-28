@@ -212,7 +212,7 @@ export class ResumeService {
   async importFile(userId: string, base64: string, mimetype: string) {
     const { basics, experiences, skills, educations } = await fileToResume(mimetype, base64);
 
-    const randomTitle = `File (${new Date().toLocaleDateString()})`;
+    const randomTitle = generateRandomName() + " (File)";
 
     const resume = rawToResume({
       basics,
@@ -496,9 +496,9 @@ function rawToResume(results: any) {
     return {
       id: createId(),
       visible: true,
-      name: skill ?? defaultSkill.name,
+      name: skill.name ?? defaultSkill.name,
       description: skill.description ?? defaultSkill.description,
-      level: skill.level ?? defaultSkill.level,
+      level: skill.level ?? 0,
       keywords: skill.keywords ?? defaultSkill.keywords,
     };
   });
@@ -508,11 +508,12 @@ function rawToResume(results: any) {
     return {
       id: createId(),
       visible: true,
-      company: experience.companyName ?? defaultExperience.company,
-      position: experience.title ?? defaultExperience.position,
+      company: experience.company ?? defaultExperience.company,
+      position: experience.position ?? defaultExperience.position,
       location: experience.location ?? defaultExperience.location,
       date: experience.date ?? defaultExperience.date,
-      summary: experience.description ?? defaultExperience.summary,
+      summary: experience.summary ?? defaultExperience.summary,
+      url: defaultUrl,
     };
   });
 
@@ -527,6 +528,7 @@ function rawToResume(results: any) {
       score: education.score ?? defaultEducation.score,
       date: education.date ?? defaultEducation.date,
       summary: education.summary ?? defaultEducation.summary,
+      url: defaultUrl,
     };
   });
 
