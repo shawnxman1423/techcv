@@ -42,7 +42,7 @@ export const useSubscription = () => {
 
   return {
     isCancelled: isCanceled,
-    isPro: isPro,
+    isPro: true,
     subscription: subscription,
   };
 };

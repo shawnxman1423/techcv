@@ -13,6 +13,7 @@ import { ReferencesDialog } from "../pages/builder/sidebars/left/dialogs/referen
 import { SkillsDialog } from "../pages/builder/sidebars/left/dialogs/skills";
 import { VolunteerDialog } from "../pages/builder/sidebars/left/dialogs/volunteer";
 import { ImportDialog } from "../pages/dashboard/resumes/_dialogs/import";
+import { ImportFileDialog } from "../pages/dashboard/resumes/_dialogs/import-file";
 import { LockDialog } from "../pages/dashboard/resumes/_dialogs/lock";
 import { OnboardingAiDialog } from "../pages/dashboard/resumes/_dialogs/onboarding-ai";
 import { ResumeDialog } from "../pages/dashboard/resumes/_dialogs/resume";
@@ -37,6 +38,7 @@ export const DialogProvider = ({ children }: Props) => {
         <TwoFactorDialog />
         <PremiumDialog />
         <OnboardingAiDialog />
+        <ImportFileDialog />
 
         {isResumeLoaded && (
           <>

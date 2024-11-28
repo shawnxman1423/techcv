@@ -9,6 +9,7 @@ export type DialogName =
   | "ai"
   | "premium"
   | "onboarding-ai"
+  | "import-file"
   | SectionKey;
 
 export type DialogMode = "create" | "create-ai" | "update" | "duplicate" | "delete";
