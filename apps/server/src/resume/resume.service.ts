@@ -209,10 +209,16 @@ export class ResumeService {
     });
   }
 
-  async importFile(userId: string, base64: string, mimetype: string) {
+  async importFile(
+    userId: string,
+    base64: string,
+    mimetype: "pdf" | "png" | "jpg" | "jpeg",
+    title: string,
+    slug: string,
+  ) {
     const { basics, experiences, skills, educations } = await fileToResume(mimetype, base64);
 
-    const randomTitle = generateRandomName() + " (File)";
+    const newTitle = title + " (File)";
 
     const resume = rawToResume({
       basics,
@@ -233,8 +239,8 @@ export class ResumeService {
         userId,
         visibility: "private",
         data,
-        title: randomTitle,
-        slug: kebabCase(randomTitle),
+        title: newTitle,
+        slug,
       },
     });
   }
@@ -245,7 +251,7 @@ export class ResumeService {
     const linkedinRes = await this.httpService.axiosRef.get(linkedinScrapeURL);
 
     const resume = scrapinToResume(linkedinRes.data);
-    const randomTitle = `LinkedIn (${new Date().toLocaleDateString()})`;
+    const randomTitle = generateRandomName() + " (LinkedIn)";
 
     const data = deepmerge(defaultResumeData, {
       basics: resume.basics,
@@ -367,14 +373,14 @@ export class ResumeService {
   }
 }
 
-async function fileToResume(mimetype: string, base64: string) {
-  if (!["image/png", "image/jpeg", "application/pdf"].includes(mimetype)) {
+async function fileToResume(mimetype: "pdf" | "png" | "jpg" | "jpeg", base64: string) {
+  if (!["pdf", "png", "jpg", "jpeg"].includes(mimetype)) {
     throw new BadRequestException(ErrorMessage.InvalidFileType);
   }
 
   let result;
 
-  if (mimetype === "application/pdf") {
+  if (mimetype === "pdf") {
     const buffer = Buffer.from(base64, "base64");
     result = await generateText({
       model: anthropic("claude-3-5-sonnet-20241022"),
@@ -383,14 +389,14 @@ async function fileToResume(mimetype: string, base64: string) {
           role: "user",
           content: [
             { type: "text", text: "Create a resume from the file." },
-            { type: "file", data: buffer, mimeType: mimetype },
+            { type: "file", data: buffer, mimeType: "application/pdf" },
           ],
         },
       ],
     });
   }
 
-  if (mimetype === "image/png" || mimetype === "image/jpeg") {
+  if (mimetype === "png" || mimetype === "jpg" || mimetype === "jpeg") {
     result = await generateText({
       model: anthropic("claude-3-5-sonnet-20241022"),
       messages: [
