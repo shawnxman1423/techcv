@@ -16,17 +16,25 @@ import {
   ImportLinkedinDto,
   ImportResumeDto,
   ResumeDto,
-  UpdateResumeDto
+  UpdateResumeDto,
 } from "@reactive-resume/dto";
 import {
   Basics,
+  defaultBasics,
+  defaultEducation,
+  defaultExperience,
   defaultResumeData,
   defaultSection,
+  defaultSkill,
   defaultUrl,
+  Education,
+  Experience,
   experienceSchema,
+  Language,
   referenceSchema,
   ResumeData,
   Sections,
+  Skill,
   skillSchema,
 } from "@reactive-resume/schema";
 import type { DeepPartial } from "@reactive-resume/utils";
@@ -202,48 +210,33 @@ export class ResumeService {
   }
 
   async importFile(userId: string, base64: string, mimetype: string) {
-    // check that file is either an image or a pdf
-    if (!["image/png", "image/jpeg", "application/pdf"].includes(mimetype)) {
-      throw new BadRequestException(ErrorMessage.InvalidFileType);
-    }
+    const { basics, experiences, skills, educations } = await fileToResume(mimetype, base64);
 
-    let result;
+    const randomTitle = `File (${new Date().toLocaleDateString()})`;
 
-    if (mimetype === "application/pdf") {
-      const buffer = Buffer.from(base64, "base64");
-      result = await generateText({
-        model: anthropic("claude-3-5-sonnet-20241022"),
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Create a resume from the file.", },
-              { type: "file", data: buffer, mimeType: mimetype, },
-            ],
-          },
-        ],
-      });
-    }
+    const resume = rawToResume({
+      basics,
+      languages: basics.languages,
+      experiences,
+      skills,
+      educations,
+      summary: basics.summary,
+    });
 
-    if (mimetype === "image/png" || mimetype === "image/jpeg") {
-      result = await generateText({
-        model: anthropic("claude-3-5-sonnet-20241022"),
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Create a resume from the file.", },
-              { type: "image", image: base64 },
-            ],
-          },
-        ],
-      });
-    }
+    const data = deepmerge(defaultResumeData, {
+      basics: resume.basics,
+      sections: resume.sections,
+    } satisfies DeepPartial<ResumeData>);
 
-    if (!result) throw new BadRequestException(ErrorMessage.InvalidFileType);
-
-    console.log(result.text);
-    return result.text;
+    return this.prisma.resume.create({
+      data: {
+        userId,
+        visibility: "private",
+        data,
+        title: randomTitle,
+        slug: kebabCase(randomTitle),
+      },
+    });
   }
 
   async importLinkedin(userId: string, importLinkedinDto: ImportLinkedinDto) {
@@ -372,6 +365,240 @@ export class ResumeService {
   printPreview(resume: ResumeDto) {
     return this.printerService.printPreview(resume);
   }
+}
+
+async function fileToResume(mimetype: string, base64: string) {
+  if (!["image/png", "image/jpeg", "application/pdf"].includes(mimetype)) {
+    throw new BadRequestException(ErrorMessage.InvalidFileType);
+  }
+
+  let result;
+
+  if (mimetype === "application/pdf") {
+    const buffer = Buffer.from(base64, "base64");
+    result = await generateText({
+      model: anthropic("claude-3-5-sonnet-20241022"),
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Create a resume from the file." },
+            { type: "file", data: buffer, mimeType: mimetype },
+          ],
+        },
+      ],
+    });
+  }
+
+  if (mimetype === "image/png" || mimetype === "image/jpeg") {
+    result = await generateText({
+      model: anthropic("claude-3-5-sonnet-20241022"),
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Create a resume from the file." },
+            { type: "image", image: base64 },
+          ],
+        },
+      ],
+    });
+  }
+
+  if (!result) throw new BadRequestException(ErrorMessage.InvalidFileType);
+
+  const basicsResult = generateObject({
+    prompt: `given the free text result, extract the basics, summary and languages: ${result.text}`,
+    model: openai("gpt-4o"),
+    schema: z.object({
+      name: z.string(),
+      lastName: z.string(),
+      email: z.string().email(),
+      phone: z.string(),
+      location: z.string(),
+      headline: z.string(),
+      summary: z.string(),
+      languages: z.array(z.string()),
+    }),
+  });
+
+  const experiencesResult = generateObject({
+    prompt: `given the free text result, extract the experiences: ${result.text}`,
+    model: openai("gpt-4o"),
+    schema: z.object({
+      experiences: z.array(
+        z.object({
+          company: z.string().min(1),
+          position: z.string(),
+          location: z.string(),
+          date: z.string(),
+          summary: z.string(),
+        }),
+      ),
+    }),
+  });
+
+  const skillsResult = generateObject({
+    prompt: `given the free text result, extract the skills: ${result.text}`,
+    model: openai("gpt-4o"),
+    schema: z.object({
+      skills: z.array(
+        z.object({
+          name: z.string(),
+          description: z.string(),
+        }),
+      ),
+    }),
+  });
+
+  const educationsResult = generateObject({
+    prompt: `given the free text result, extract the educations: ${result.text}`,
+    model: openai("gpt-4o"),
+    schema: z.object({
+      educations: z.array(
+        z.object({
+          institution: z.string().min(1),
+          studyType: z.string(),
+          area: z.string(),
+          score: z.string(),
+          date: z.string(),
+          summary: z.string(),
+        }),
+      ),
+    }),
+  });
+
+  const allResults = await Promise.all([
+    basicsResult,
+    experiencesResult,
+    skillsResult,
+    educationsResult,
+  ]);
+
+  const basics = allResults[0].object;
+  const experiences = allResults[1].object.experiences;
+  const skills = allResults[2].object.skills;
+  const educations = allResults[3].object.educations;
+  return { basics, experiences, skills, educations };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rawToResume(results: any) {
+  const rawBasics = results.basics;
+  const rawLanguages = results.languages;
+  const rawExperiences = results.experiences;
+  const rawSkills = results.skills;
+  const rawEducations = results.educations;
+  const rawSummary = results.summary;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const skills: Skill[] = rawSkills.map((skill: any) => {
+    return {
+      id: createId(),
+      visible: true,
+      name: skill ?? defaultSkill.name,
+      description: skill.description ?? defaultSkill.description,
+      level: skill.level ?? defaultSkill.level,
+      keywords: skill.keywords ?? defaultSkill.keywords,
+    };
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const experiences: Experience[] = rawExperiences.map((experience: any) => {
+    return {
+      id: createId(),
+      visible: true,
+      company: experience.companyName ?? defaultExperience.company,
+      position: experience.title ?? defaultExperience.position,
+      location: experience.location ?? defaultExperience.location,
+      date: experience.date ?? defaultExperience.date,
+      summary: experience.description ?? defaultExperience.summary,
+    };
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const educations: Education[] = rawEducations.map((education: any) => {
+    return {
+      id: createId(),
+      visible: true,
+      institution: education.institution ?? defaultEducation.institution,
+      studyType: education.studyType ?? defaultEducation.studyType,
+      area: education.area ?? defaultEducation.area,
+      score: education.score ?? defaultEducation.score,
+      date: education.date ?? defaultEducation.date,
+      summary: education.summary ?? defaultEducation.summary,
+    };
+  });
+
+  const basics: Basics = {
+    name: rawBasics.name ?? defaultBasics.name,
+    headline: rawBasics.headline ?? defaultBasics.headline,
+    email: rawBasics.email ?? defaultBasics.email,
+    phone: rawBasics.phone ?? defaultBasics.phone,
+    location: rawBasics.location ?? defaultBasics.location,
+    url: defaultUrl,
+    customFields: [],
+    picture: defaultBasics.picture,
+  };
+
+  const languages: Language[] = rawLanguages.map((language: string) => {
+    return {
+      id: createId(),
+      name: language,
+      description: "",
+      level: 0,
+    };
+  });
+
+  const sections: Sections = {
+    summary: {
+      ...defaultSection,
+      id: "summary",
+      name: "Summary",
+      content: rawSummary ?? defaultResumeData.sections.summary.content,
+    },
+    education: {
+      ...defaultSection,
+      id: "education",
+      name: "Education",
+      items: educations,
+    },
+    experience: {
+      ...defaultSection,
+      id: "experience",
+      name: "Experience",
+      items: experiences,
+    },
+    skills: {
+      ...defaultSection,
+      id: "skills",
+      name: "Skills",
+      items: skills,
+    },
+    languages: {
+      ...defaultSection,
+      id: "languages",
+      name: "Languages",
+      items: languages,
+    },
+    profiles: {
+      ...defaultSection,
+      id: "profiles",
+      name: "Profiles",
+      items: [],
+    },
+
+    volunteer: { ...defaultSection, id: "volunteer", name: "Volunteering", items: [] },
+    interests: { ...defaultSection, id: "interests", name: "Interests", items: [] },
+    projects: { ...defaultSection, id: "projects", name: "Projects", items: [] },
+    publications: { ...defaultSection, id: "publications", name: "Publications", items: [] },
+    references: { ...defaultSection, id: "references", name: "References", items: [] },
+    awards: { ...defaultSection, id: "awards", name: "Awards", items: [] },
+    certifications: { ...defaultSection, id: "certifications", name: "Certifications", items: [] },
+    custom: {},
+  };
+
+  return { basics, sections };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

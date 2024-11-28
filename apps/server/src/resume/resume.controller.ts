@@ -9,7 +9,7 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards
+  UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { User as UserEntity } from "@prisma/client";
@@ -92,7 +92,7 @@ export class ResumeController {
 
   @Post("import-file")
   @UseGuards(TwoFactorGuard)
-  async importFile(@Body() body: { file: string; mimeType: string }, @User() user: UserEntity) {
+  async importFile(@Body() body: { file: string; mimeType: string },  @User() user: UserEntity) {
     try {
       return await this.resumeService.importFile(user.id, body.file, body.mimeType);
     } catch (error) {
