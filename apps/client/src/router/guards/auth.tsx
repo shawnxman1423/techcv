@@ -17,7 +17,7 @@ export const AuthGuard = () => {
     const redirectAfterLogin = localStorage.getItem("redirectAfterLogin");
     const onboardingLinkedinId = localStorage.getItem("onboardingLinkedinId");
 
-    if (redirectAfterLogin && !loading) {
+    if (redirectAfterLogin && !loading && user) {
       localStorage.removeItem("redirectAfterLogin");
       navigate(redirectAfterLogin);
     }
