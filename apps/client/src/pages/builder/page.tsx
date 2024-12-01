@@ -1,6 +1,6 @@
 import { t } from "@lingui/macro";
 import { ResumeDto } from "@reactive-resume/dto";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { LoaderFunction, redirect } from "react-router-dom";
 
@@ -10,6 +10,7 @@ import { useBuilderStore } from "@/client/stores/builder";
 import { useResumeStore } from "@/client/stores/resume";
 
 export const BuilderPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const frameRef = useBuilderStore((state) => state.frame.ref);
   const setFrameRef = useBuilderStore((state) => state.frame.setRef);
 
@@ -19,10 +20,20 @@ export const BuilderPage = () => {
   const updateResumeInFrame = useCallback(() => {
     if (!frameRef?.contentWindow) return;
     const message = { type: "SET_RESUME", payload: resume.data };
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      frameRef.contentWindow?.postMessage(message, "*");
+    }, 1000);
+
     (() => {
       frameRef.contentWindow.postMessage(message, "*");
     })();
-  }, [frameRef, resume.data]);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [frameRef, resume.data, isLoading]);
 
   // Send resume data to iframe on initial load
   useEffect(() => {
@@ -44,6 +55,13 @@ export const BuilderPage = () => {
         </title>
       </Helmet>
 
+      {isLoading && (
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto size-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
+          </div>
+        </div>
+      )}
       <iframe
         ref={setFrameRef}
         title={resume.id}

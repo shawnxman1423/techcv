@@ -3,7 +3,7 @@ import { CircleNotch, FilePdf } from "@phosphor-icons/react";
 import { ResumeDto } from "@reactive-resume/dto";
 import { Button } from "@reactive-resume/ui";
 import { pageSizeMap } from "@reactive-resume/utils";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, LoaderFunction, redirect, useLoaderData } from "react-router-dom";
 
@@ -19,19 +19,47 @@ const openInNewTab = (url: string) => {
 
 export const PublicResumePage = () => {
   const frameRef = useRef<HTMLIFrameElement>(null);
-
+  const [isLoading, setIsLoading] = useState(true);
   const { printResume, loading } = usePrintResume();
 
   const { id, title, data: resume } = useLoaderData() as ResumeDto;
   const format = resume.metadata.page.format;
 
+  /*   const updateResumeInFrame = useCallback(() => {
+    if (!frameRef?.contentWindow) return;
+    const message = { type: "SET_RESUME", payload: resume.data };
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      frameRef.contentWindow?.postMessage(message, "*");
+    }, 1000);
+
+    (() => {
+      frameRef.contentWindow.postMessage(message, "*");
+    })();
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [frameRef, resume.data, isLoading]); */
+
   const updateResumeInFrame = useCallback(() => {
     if (!frameRef.current?.contentWindow) return;
     const message = { type: "SET_RESUME", payload: resume };
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      frameRef.current?.contentWindow?.postMessage(message, "*");
+    }, 1000);
+
     (() => {
       frameRef.current.contentWindow.postMessage(message, "*");
     })();
-  }, [frameRef, resume]);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [frameRef, resume, isLoading]);
 
   useEffect(() => {
     if (!frameRef.current) return;
@@ -78,6 +106,9 @@ export const PublicResumePage = () => {
         style={{ width: `${pageSizeMap[format].width}mm` }}
         className="mx-auto mb-6 mt-16 overflow-hidden rounded shadow-xl print:m-0 print:shadow-none"
       >
+        {isLoading && (
+            <div className="mx-auto size-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
+        )}
         <iframe
           ref={frameRef}
           title={title}

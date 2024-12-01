@@ -31,7 +31,7 @@ type Props = {
 };
 
 export const ResumeCard = ({ resume }: Props) => {
-  const frameRef = useResumePreview({
+  const { frameRef, isLoading } = useResumePreview({
     ...resume.data,
     metadata: {
       ...resume.data.metadata,
