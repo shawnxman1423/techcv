@@ -8,11 +8,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { LocaleComboboxPopover } from "@/client/components/locale-combobox";
+import { useLocale } from "@/client/hooks/use-locale";
 import { useUpdateUser, useUser } from "@/client/services/user";
 
 const formSchema = z.object({
   theme: z.enum(["system", "light", "dark"]).default("system"),
-  locale: z.string().default("en-US"),
+  locale: z.string().default("he-IL"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -20,11 +21,12 @@ type FormValues = z.infer<typeof formSchema>;
 export const ProfileSettings = () => {
   const { user } = useUser();
   const { theme, setTheme } = useTheme();
+  const locale = useLocale();
   const { updateUser, loading } = useUpdateUser();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { theme, locale: "en-US" },
+    defaultValues: { theme, locale },
   });
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export const ProfileSettings = () => {
   const onReset = () => {
     if (!user) return;
 
-    form.reset({ theme, locale: user.locale });
+    form.reset({ theme, locale });
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -42,7 +44,7 @@ export const ProfileSettings = () => {
 
     setTheme(data.theme);
 
-    if (user.locale !== data.locale) {
+    if (locale !== data.locale) {
       window.localStorage.setItem("locale", data.locale);
       await updateUser({ locale: data.locale });
 

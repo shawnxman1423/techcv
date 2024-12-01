@@ -21,10 +21,9 @@ type Props = {
 
 export const LocaleProvider = ({ children }: Props) => {
   const userLocale = useAuthStore((state) => state.user?.locale);
-  console.log(userLocale);
+
   const detectedLocal = useMemo(
-    () =>
-      detect(fromUrl("locale"), userLocale, fromStorage("locale"), defaultLocale) ?? defaultLocale,
+    () => detect(fromUrl("locale"), fromStorage("locale"), defaultLocale) ?? defaultLocale,
     [userLocale],
   );
 
@@ -32,7 +31,7 @@ export const LocaleProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const detectedLocale =
-      detect(fromUrl("locale"), userLocale, fromStorage("locale"), defaultLocale) ?? defaultLocale;
+      detect(fromUrl("locale"), fromStorage("locale"), defaultLocale) ?? defaultLocale;
     // Activate the locale only if it's supported
     if (languages.some((lang) => lang.locale === detectedLocale)) {
       void dynamicActivate(detectedLocale);

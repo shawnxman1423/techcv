@@ -48,7 +48,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, "linkedin") {
         user = await this.userService.create({
           email,
           picture,
-          locale: "en-US",
+          locale: "he-IL",
           name: displayName,
           provider: "linkedin",
           emailVerified: true, // auto-verify emails
