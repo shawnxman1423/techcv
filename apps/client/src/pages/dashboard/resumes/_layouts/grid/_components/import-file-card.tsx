@@ -1,5 +1,5 @@
 import { t } from "@lingui/macro";
-import { File } from "@phosphor-icons/react";
+import { FilePdf } from "@phosphor-icons/react";
 import { ResumeDto } from "@reactive-resume/dto";
 import { KeyboardShortcut } from "@reactive-resume/ui";
 import { cn } from "@reactive-resume/utils";
@@ -22,7 +22,7 @@ export const ImportFileCard = ({ resumes }: { resumes: ResumeDto[] | undefined }
         else openPremium("update");
       }}
     >
-      <File size={64} weight="thin" />
+      <FilePdf size={64} weight="thin" />
 
       <div
         className={cn(
@@ -36,7 +36,7 @@ export const ImportFileCard = ({ resumes }: { resumes: ResumeDto[] | undefined }
           <KeyboardShortcut className="ms-2">^K</KeyboardShortcut>
         </h4>
 
-        <p className="line-clamp-1 text-xs opacity-75">{t`PDF, JPEG, PNG...`}</p>
+        <p className="line-clamp-1 text-xs opacity-75">{t`LinkedIn, PDF, etc...`}</p>
       </div>
     </BaseCard>
   );

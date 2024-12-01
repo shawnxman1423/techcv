@@ -10,9 +10,10 @@ export type DialogName =
   | "premium"
   | "onboarding-ai"
   | "import-file"
+  | "create-ai"
   | SectionKey;
 
-export type DialogMode = "create" | "create-ai" | "update" | "duplicate" | "delete";
+export type DialogMode = "create" | "update" | "duplicate" | "delete";
 
 export type DialogPayload<T = unknown> = {
   id: DialogName;

@@ -12,6 +12,7 @@ import { PublicationsDialog } from "../pages/builder/sidebars/left/dialogs/publi
 import { ReferencesDialog } from "../pages/builder/sidebars/left/dialogs/references";
 import { SkillsDialog } from "../pages/builder/sidebars/left/dialogs/skills";
 import { VolunteerDialog } from "../pages/builder/sidebars/left/dialogs/volunteer";
+import { CreateAiDialog } from "../pages/dashboard/resumes/_dialogs/create-ai";
 import { ImportDialog } from "../pages/dashboard/resumes/_dialogs/import";
 import { ImportFileDialog } from "../pages/dashboard/resumes/_dialogs/import-file";
 import { LockDialog } from "../pages/dashboard/resumes/_dialogs/lock";
@@ -39,6 +40,7 @@ export const DialogProvider = ({ children }: Props) => {
         <PremiumDialog />
         <OnboardingAiDialog />
         <ImportFileDialog />
+        <CreateAiDialog />
 
         {isResumeLoaded && (
           <>

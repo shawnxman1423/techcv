@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { t } from "@lingui/macro";
-import { Check, DownloadSimple, Spinner } from "@phosphor-icons/react";
+import { Check, DownloadSimple } from "@phosphor-icons/react";
 import {
   JsonResume,
   JsonResumeParser,
@@ -34,7 +34,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Separator,
 } from "@reactive-resume/ui";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
@@ -43,8 +42,6 @@ import { z, ZodError } from "zod";
 
 import { useToast } from "@/client/hooks/use-toast";
 import { useImportResume } from "@/client/services/resume/import";
-import { useImportLinkedinResume } from "@/client/services/resume/import-linkedin";
-import { useSubscription } from "@/client/services/user";
 import { useDialog } from "@/client/stores/dialog";
 
 enum ImportType {
@@ -85,19 +82,9 @@ export const ImportDialog = () => {
   const { toast } = useToast();
   const { isOpen, close } = useDialog("import");
   const { importResume, loading: importLoading } = useImportResume();
-  const { importLinkedinResume, loading: importLinkedinLoading } = useImportLinkedinResume();
-  const subscription = useSubscription();
-  const { open: openPremium } = useDialog("premium");
 
-  const loading = importLoading || importLinkedinLoading;
+  const loading = importLoading;
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-
-  const linkedinForm = useForm<FormLinkedinValues>({
-    defaultValues: {
-      linkedinUrl: "",
-    },
-    resolver: zodResolver(formLinkedinSchema),
-  });
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -172,27 +159,6 @@ export const ImportDialog = () => {
     }
   };
 
-  const onLinkedinImport = async () => {
-    try {
-      const { linkedinUrl } = formLinkedinSchema.parse(linkedinForm.getValues());
-      await importLinkedinResume({ linkedinURL: linkedinUrl });
-      close();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        toast({
-          variant: "error",
-          title: t`An error occurred while validating the LinkedIn URL.`,
-        });
-      } else if (error instanceof Error) {
-        toast({
-          variant: "error",
-          title: t`Oops, the server returned an error.`,
-          description: error.message,
-        });
-      }
-    }
-  };
-
   const onImport = async () => {
     const { type } = formSchema.parse(form.getValues());
 
@@ -256,49 +222,6 @@ export const ImportDialog = () => {
             {t`Upload a file from one of the accepted sources to parse existing data and import it into TechCV for easier editing.`}
           </DialogDescription>
         </DialogHeader>
-
-        <Form {...linkedinForm}>
-          <form className="space-y-4">
-            <FormField
-              name="linkedinUrl"
-              control={linkedinForm.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t`LinkedIn Profile URL`}</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="https://www.linkedin.com/in/ryanroslansky/" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-        {!subscription.isPro && (
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              disabled={loading}
-              onClick={() => {
-                openPremium("update");
-              }}
-            >
-              {loading && <Spinner size={16} className="me-2 animate-spin" />}
-              {t`Upgrade`}
-            </Button>
-          </div>
-        )}
-
-        {subscription.isPro && (
-          <div className="flex justify-end gap-2">
-            <Button type="button" disabled={loading} onClick={onLinkedinImport}>
-              {loading && <Spinner size={16} className="me-2 animate-spin" />}
-              {t`Import`}
-            </Button>
-          </div>
-        )}
-
-        <Separator />
 
         <Form {...form}>
           <form className="space-y-4">

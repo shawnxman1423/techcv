@@ -1,6 +1,5 @@
 import { t } from "@lingui/macro";
-import { MagicWand } from "@phosphor-icons/react";
-import { ResumeDto } from "@reactive-resume/dto";
+import { FilePdf } from "@phosphor-icons/react";
 import { KeyboardShortcut } from "@reactive-resume/ui";
 
 import { useSubscription } from "@/client/services/user";
@@ -8,24 +7,24 @@ import { useDialog } from "@/client/stores/dialog";
 
 import { BaseListItem } from "./base-item";
 
-export const AiResumeListItem = ({ resumes }: { resumes: ResumeDto[] | undefined }) => {
+export const ImportFileListItem = () => {
   const subscription = useSubscription();
   const { open: openPremium } = useDialog("premium");
-  const { open: openResume } = useDialog("create-ai");
+  const { open: openImportFile } = useDialog("import-file");
 
   return (
     <BaseListItem
-      start={<MagicWand size={18} />}
+      start={<FilePdf size={18} />}
       title={
         <>
-          <span>{t`Create a resume with AI`}</span>
+          <span>{t`Import an existing resume`}</span>
           {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
           <KeyboardShortcut className="ms-2">^K</KeyboardShortcut>
         </>
       }
-      description={t`Let the AI do the work`}
+      description={t`LinkedIn, PDF, etc.`}
       onClick={() => {
-        if (subscription.isPro) openResume("update");
+        if (subscription.isPro) openImportFile("create");
         else openPremium("update");
       }}
     />

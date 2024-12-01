@@ -13,12 +13,12 @@ export const ImportResumeListItem = () => {
       start={<DownloadSimple size={18} />}
       title={
         <>
-          <span>{t`Import an existing resume`}</span>
+          <span>{t`Import from backup`}</span>
           {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
           <KeyboardShortcut className="ms-2">^I</KeyboardShortcut>
         </>
       }
-      description={t`LinkedIn, JSON Resume, etc.`}
+      description={t`JSON Resume, etc.`}
       onClick={() => {
         open("create");
       }}

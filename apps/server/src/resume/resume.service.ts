@@ -209,16 +209,10 @@ export class ResumeService {
     });
   }
 
-  async importFile(
-    userId: string,
-    base64: string,
-    mimetype: "pdf" | "png" | "jpg" | "jpeg",
-    title: string,
-    slug: string,
-  ) {
+  async importFile(userId: string, base64: string, mimetype: "pdf" | "png" | "jpg" | "jpeg") {
     const { basics, experiences, skills, educations } = await fileToResume(mimetype, base64);
 
-    const newTitle = title + " (File)";
+    const newTitle = generateRandomName() + " (File)";
 
     const resume = rawToResume({
       basics,
@@ -240,7 +234,7 @@ export class ResumeService {
         visibility: "private",
         data,
         title: newTitle,
-        slug,
+        slug: kebabCase(newTitle),
       },
     });
   }

@@ -12,13 +12,13 @@ import { BaseCard } from "./base-card";
 export const AiResumeCard = ({ resumes }: { resumes: ResumeDto[] | undefined }) => {
   const subscription = useSubscription();
   const { open: openPremium } = useDialog("premium");
-  const { open: openResume } = useDialog("resume");
+  const { open: openResume } = useDialog("create-ai");
 
   return (
     <BaseCard
       withShineBorder
       onClick={() => {
-        if (subscription.isPro) openResume("create-ai", { id: "resume", item: resumes });
+        if (subscription.isPro) openResume("create");
         else openPremium("update");
       }}
     >

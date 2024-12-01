@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { t } from "@lingui/macro";
-import { MagicWand, Plus, Spinner } from "@phosphor-icons/react";
+import { Plus, Spinner } from "@phosphor-icons/react";
 import { createResumeSchema, ImportFileDto, importFileSchema } from "@reactive-resume/dto";
 import {
   Button,
@@ -23,15 +23,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Tooltip,
+  Separator,
 } from "@reactive-resume/ui";
-import { generateRandomName, kebabCase } from "@reactive-resume/utils";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 
 import { useToast } from "@/client/hooks/use-toast";
 import { useImportFileResume } from "@/client/services/resume/import-file";
+import { importLinkedinResume } from "@/client/services/resume/import-linkedin";
 import { useDialog } from "@/client/stores/dialog";
 
 const formSchema = z.object({
@@ -40,6 +40,15 @@ const formSchema = z.object({
   file: z.instanceof(File),
   type: z.enum(["pdf", "png", "jpg", "jpeg"]),
 });
+
+const formLinkedinSchema = z.object({
+  linkedinUrl: z
+    .string()
+    .url()
+    .refine((value) => value.includes("linkedin.com/in/")),
+});
+
+type FormLinkedinValues = z.infer<typeof formLinkedinSchema>;
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -58,6 +67,13 @@ export const ImportFileDialog = () => {
     },
   });
 
+  const linkedinForm = useForm<FormLinkedinValues>({
+    defaultValues: {
+      linkedinUrl: "",
+    },
+    resolver: zodResolver(formLinkedinSchema),
+  });
+
   const filetype = form.watch("type");
 
   const accept = useMemo(() => {
@@ -69,15 +85,32 @@ export const ImportFileDialog = () => {
     return "";
   }, [filetype]);
 
+  const onLinkedinImport = async () => {
+    try {
+      const { linkedinUrl } = formLinkedinSchema.parse(linkedinForm.getValues());
+      await importLinkedinResume({ linkedinURL: linkedinUrl });
+      close();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toast({
+          variant: "error",
+          title: t`An error occurred while validating the LinkedIn URL.`,
+        });
+      } else if (error instanceof Error) {
+        toast({
+          variant: "error",
+          title: t`Oops, the server returned an error.`,
+          description: error.message,
+        });
+      }
+    }
+  };
+
   const onSubmit = async (values: FormValues) => {
     const file = values.file;
     const base64 = await fileToBase64(file);
 
-    console.log(base64);
-
     await importFileResume({
-      title: values.title,
-      slug: values.slug,
       file: base64.split(",")[1],
       type: values.type,
     });
@@ -85,71 +118,47 @@ export const ImportFileDialog = () => {
     close();
   };
 
-  const onGenerateRandomName = () => {
-    const name = generateRandomName();
-    form.setValue("title", name);
-    form.setValue("slug", kebabCase(name));
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={close}>
       <DialogContent className="max-h-screen overflow-y-scroll">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex items-center gap-2.5">
+              <Plus />
+              <h2>{t`Import existing resume`}</h2>
+            </div>
+          </DialogTitle>
+          <DialogDescription>{t`Upload your resume file`}</DialogDescription>
+        </DialogHeader>
+
+        <Form {...linkedinForm}>
+          <form className="space-y-4">
+            <FormField
+              name="linkedinUrl"
+              control={linkedinForm.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t`LinkedIn Profile URL`}</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="https://www.linkedin.com/in/ryanroslansky/" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" disabled={loading} onClick={onLinkedinImport}>
+            {loading && <Spinner size={16} className="me-2 animate-spin" />}
+            {t`Import`}
+          </Button>
+        </div>
+
+        <Separator />
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogHeader>
-              <DialogTitle>
-                <div className="flex items-center gap-2.5">
-                  <Plus />
-                  <h2>{t`Import existing resume`}</h2>
-                </div>
-              </DialogTitle>
-              <DialogDescription>{t`Upload your resume file`}</DialogDescription>
-            </DialogHeader>
-
-            <FormField
-              name="title"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t`Title`}</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center justify-between gap-x-2">
-                      <Input {...field} className="flex-1" />
-
-                      <Tooltip content={t`Generate a random title for your resume`}>
-                        <Button
-                          size="icon"
-                          type="button"
-                          variant="outline"
-                          onClick={onGenerateRandomName}
-                        >
-                          <MagicWand />
-                        </Button>
-                      </Tooltip>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    {t`Tip: You can name the resume referring to the position you are applying for.`}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="slug"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t`Slug`}</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               name="type"
               control={form.control}
