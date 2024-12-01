@@ -31,13 +31,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Textarea,
-  Tooltip,
+  Tooltip
 } from "@reactive-resume/ui";
 import { cn, generateRandomName, kebabCase } from "@reactive-resume/utils";
 import { useEffect } from "react";
@@ -64,7 +58,6 @@ type FormValues = z.infer<typeof formSchema>;
 export const ResumeDialog = () => {
   const { isOpen, mode, payload, close } = useDialog<ResumeDto[]>("resume");
 
-  const isCreateAi = mode === "create-ai";
   const isCreate = mode === "create";
   const isUpdate = mode === "update";
   const isDelete = mode === "delete";
@@ -99,16 +92,6 @@ export const ResumeDialog = () => {
   }, [form.watch("title")]);
 
   const onSubmit = async (values: FormValues) => {
-    if (isCreateAi) {
-      await createAiResume({
-        slug: values.slug,
-        title: values.title,
-        visibility: "private",
-        existingResumeId: values.existingResumeId,
-        jobDescription: values.jobDescription,
-      });
-    }
-
     if (isCreate) {
       await createResume({ slug: values.slug, title: values.title, visibility: "private" });
     }
@@ -144,13 +127,6 @@ export const ResumeDialog = () => {
   };
 
   const onReset = () => {
-    if (isCreateAi)
-      form.reset({
-        title: "",
-        slug: "",
-        existingResumeId: "",
-        jobDescription: "",
-      });
     if (isCreate) form.reset({ title: "", slug: "" });
     if (isUpdate)
       form.reset({
@@ -225,7 +201,6 @@ export const ResumeDialog = () => {
                 <div className="flex items-center gap-2.5">
                   <Plus />
                   <h2>
-                    {isCreateAi && t`Create a resume with AI`}
                     {isCreate && t`Create a new resume`}
                     {isUpdate && t`Update an existing resume`}
                     {isDuplicate && t`Duplicate an existing resume`}
@@ -233,7 +208,6 @@ export const ResumeDialog = () => {
                 </div>
               </DialogTitle>
               <DialogDescription>
-                {isCreateAi && t`Let the AI do the work`}
                 {isCreate && t`Start building your resume by giving it a name.`}
                 {isUpdate && t`Changed your mind about the name? Give it a new one.`}
                 {isDuplicate && t`Give your old resume a new name.`}
@@ -250,7 +224,7 @@ export const ResumeDialog = () => {
                     <div className="flex items-center justify-between gap-x-2">
                       <Input {...field} className="flex-1" />
 
-                      {(isCreate || isCreateAi || isDuplicate) && (
+                      {(isCreate || isDuplicate) && (
                         <Tooltip content={t`Generate a random title for your resume`}>
                           <Button
                             size="icon"
@@ -286,57 +260,16 @@ export const ResumeDialog = () => {
               )}
             />
 
-            {isCreateAi && (
-              <>
-                <FormField
-                  name="existingResumeId"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t`Resume`}</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t`Please select an existing resume`} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {payload.item?.map((resume: ResumeDto) => (
-                              <SelectItem key={resume.id} value={resume.id}>
-                                {resume.title}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="jobDescription"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t`Job Description`}</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
+   
 
             <DialogFooter>
               <div className="flex items-center">
                 <Button
                   type="submit"
                   disabled={loading}
-                  className={cn((isCreate || isCreateAi) && "rounded-r-none")}
+                  className={cn((isCreate ) && "rounded-r-none")}
                 >
                   {loading && <Spinner className="me-2 animate-spin" />}
-                  {isCreateAi && t`Create`}
                   {isCreate && t`Create`}
                   {isUpdate && t`Save Changes`}
                   {isDuplicate && t`Duplicate`}
