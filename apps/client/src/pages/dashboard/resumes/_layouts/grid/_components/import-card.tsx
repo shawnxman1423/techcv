@@ -30,7 +30,7 @@ export const ImportResumeCard = () => {
           <KeyboardShortcut className="ms-2">^I</KeyboardShortcut>
         </h4>
 
-        <p className="line-clamp-1 text-xs opacity-75">{t`JSON Resume, etc.`}</p>
+        <p className="line-clamp-1 text-xs opacity-75">{t`JSON Resume, etc...`}</p>
       </div>
     </BaseCard>
   );

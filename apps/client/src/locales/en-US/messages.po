@@ -1835,3 +1835,12 @@ msgstr "Continuous updates and system upgrades"
 
 msgid "Fast technical support at every stage"
 msgstr "Fast technical support at every stage"
+
+msgid "Import from backup"
+msgstr "Import from backup"
+
+msgid "LinkedIn, PDF, etc..."
+msgstr "Linkedin, PDF, etc..."
+
+msgid "JSON Resume, etc..."
+msgstr "JSON Resume, etc..."

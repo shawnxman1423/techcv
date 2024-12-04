@@ -1835,3 +1835,12 @@ msgstr "עדכונים שוטפים ושדרוגים למערכת"
 
 msgid "Fast technical support at every stage"
 msgstr "תמיכה טכנית מהירה בכל שלב"
+
+msgid "Import from backup"
+msgstr "ייבוא מגיבוי קיים"
+
+msgid "LinkedIn, PDF, etc..."
+msgstr "לינקדאין, PDF, וכד׳"
+
+msgid "JSON Resume, etc..."
+msgstr "קובץ JSON, וכד׳"

@@ -18,7 +18,7 @@ export const ImportResumeListItem = () => {
           <KeyboardShortcut className="ms-2">^I</KeyboardShortcut>
         </>
       }
-      description={t`JSON Resume, etc.`}
+      description={t`JSON Resume, etc...`}
       onClick={() => {
         open("create");
       }}
