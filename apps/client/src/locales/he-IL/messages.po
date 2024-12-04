@@ -1844,3 +1844,6 @@ msgstr "לינקדאין, PDF, וכד׳"
 
 msgid "JSON Resume, etc..."
 msgstr "קובץ JSON, וכד׳"
+
+msgid "Use your LinkedIn profile URL or upload your existing resume file"
+msgstr "אפשר להכניס קישור לפרופיל הלינקדאין שלך או להעלות קובץ קיים"

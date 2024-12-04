@@ -125,10 +125,10 @@ export const ImportFileDialog = () => {
           <DialogTitle>
             <div className="flex items-center gap-2.5">
               <Plus />
-              <h2>{t`Import existing resume`}</h2>
+              <h2>{t`Import an existing resume`}</h2>
             </div>
           </DialogTitle>
-          <DialogDescription>{t`Upload your resume file`}</DialogDescription>
+          <DialogDescription>{t`Use your LinkedIn profile URL or upload your existing resume file`}</DialogDescription>
         </DialogHeader>
 
         <Form {...linkedinForm}>

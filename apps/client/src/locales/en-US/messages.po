@@ -1844,3 +1844,7 @@ msgstr "Linkedin, PDF, etc..."
 
 msgid "JSON Resume, etc..."
 msgstr "JSON Resume, etc..."
+
+
+msgid "Use your LinkedIn profile URL or upload your existing resume file"
+msgstr "Use your LinkedIn profile URL or upload your existing resume file""
