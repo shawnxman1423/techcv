@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { t } from "@lingui/macro";
 import { Plus, Spinner } from "@phosphor-icons/react";
-import { createResumeSchema, ResumeDto } from "@reactive-resume/dto";
-import { idSchema } from "@reactive-resume/schema";
+import { ResumeDto } from "@reactive-resume/dto";
 import {
   Button,
   Dialog,
@@ -24,7 +23,7 @@ import {
   SelectValue,
   Textarea
 } from "@reactive-resume/ui";
-import { cn, kebabCase } from "@reactive-resume/utils";
+import { cn, generateRandomName, kebabCase } from "@reactive-resume/utils";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,8 +31,7 @@ import { z } from "zod";
 import { useCreateAiResume, useResumes } from "@/client/services/resume";
 import { useDialog } from "@/client/stores/dialog";
 
-const formSchema = createResumeSchema.extend({
-  id: idSchema.optional(),
+const formSchema = z.object({
   existingResumeId: z.string().min(1).optional(),
   jobDescription: z.string().min(1).optional(),
 });
@@ -59,15 +57,13 @@ export const CreateAiDialog = () => {
     if (isOpen) onReset();
   }, [isOpen]);
 
-  useEffect(() => {
-    const slug = kebabCase(form.watch("title"));
-    form.setValue("slug", slug);
-  }, [form.watch("title")]);
-
   const onSubmit = async (values: FormValues) => {
+    const title = generateRandomName();
+    const slug = kebabCase(title);
+
     await createAiResume({
-      slug: values.slug,
-      title: values.title,
+      title,
+      slug,
       visibility: "private",
       existingResumeId: values.existingResumeId,
       jobDescription: values.jobDescription,
@@ -78,8 +74,6 @@ export const CreateAiDialog = () => {
 
   const onReset = () => {
     form.reset({
-      title: "",
-      slug: "",
       existingResumeId: "",
       jobDescription: "",
     });

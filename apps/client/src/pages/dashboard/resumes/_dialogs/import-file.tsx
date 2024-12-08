@@ -23,15 +23,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Separator,
+  Separator
 } from "@reactive-resume/ui";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z, ZodError } from "zod";
 
 import { useToast } from "@/client/hooks/use-toast";
 import { useImportFileResume } from "@/client/services/resume/import-file";
-import { importLinkedinResume } from "@/client/services/resume/import-linkedin";
+import { useImportLinkedinResume } from "@/client/services/resume/import-linkedin";
 import { useDialog } from "@/client/stores/dialog";
 
 const formSchema = z.object({
@@ -53,7 +53,7 @@ type FormValues = z.infer<typeof formSchema>;
 export const ImportFileDialog = () => {
   const { isOpen, close } = useDialog<ImportFileDto[]>("import-file");
   const { importFileResume, loading } = useImportFileResume();
-  const [linkedinLoading, setLinkedinLoading] = useState(false);
+  const { importLinkedinResume, loading: linkedinLoading } = useImportLinkedinResume();
   const { toast } = useToast();
 
   const isLoading = loading || linkedinLoading;
@@ -85,7 +85,6 @@ export const ImportFileDialog = () => {
   }, [filetype]);
 
   const onLinkedinImport = async () => {
-    setLinkedinLoading(true);
     try {
       const { linkedinUrl } = formLinkedinSchema.parse(linkedinForm.getValues());
       await importLinkedinResume({ linkedinURL: linkedinUrl });
@@ -103,8 +102,6 @@ export const ImportFileDialog = () => {
           description: error.message,
         });
       }
-    } finally {
-      setLinkedinLoading(false);
     }
   };
 
