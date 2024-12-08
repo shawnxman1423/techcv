@@ -48,7 +48,7 @@ export type Metadata = z.infer<typeof metadataSchema>;
 
 // Defaults
 export const defaultMetadata: Metadata = {
-  template: "rhyhorn",
+  template: "glalie",
   layout: defaultLayout,
   css: {
     value: ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
