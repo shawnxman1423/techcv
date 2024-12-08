@@ -154,7 +154,7 @@ export const ImportFileDialog = () => {
           </form>
         </Form>
 
-        <div className="flex justify-start md:justify-end gap-2">
+        <div className="flex justify-start gap-2 md:justify-end">
           <Button type="button" disabled={isLoading} onClick={onLinkedinImport}>
             {isLoading && <Spinner size={16} className="me-2 animate-spin" />}
             {t`Import`}
