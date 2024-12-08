@@ -87,6 +87,9 @@ export const configSchema = z.object({
 
   // Anthropic
   ANTHROPIC_API_KEY: z.string().optional(),
+
+  // Webhook
+  USER_CREATED_WEBHOOK_URL: z.string().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;

@@ -4,12 +4,14 @@ import { ErrorMessage } from "@reactive-resume/utils";
 import { PrismaService } from "nestjs-prisma";
 
 import { StorageService } from "../storage/storage.service";
+import { WebhookService } from "../webhook/webhook.service";
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    private readonly webhookService: WebhookService,
   ) {}
 
   async findOneById(id: string) {
@@ -69,8 +71,13 @@ export class UserService {
     return user;
   }
 
-  create(data: Prisma.UserCreateInput) {
-    return this.prisma.user.create({ data, include: { secrets: true, subscription: true } });
+  async create(data: Prisma.UserCreateInput) {
+    const user = await this.prisma.user.create({
+      data,
+      include: { secrets: true, subscription: true },
+    });
+    await this.webhookService.sendUserCreatedWebhook(user);
+    return user;
   }
 
   updateByEmail(email: string, data: Prisma.UserUpdateArgs["data"]) {
