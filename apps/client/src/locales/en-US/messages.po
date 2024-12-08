@@ -1848,3 +1848,6 @@ msgstr "JSON Resume, etc..."
 
 msgid "Use your LinkedIn profile URL or upload your existing resume file"
 msgstr "Use your LinkedIn profile URL or upload your existing resume file""
+
+msgid "An error occurred while validating the LinkedIn URL."
+msgstr "An error occurred while validating the LinkedIn URL."

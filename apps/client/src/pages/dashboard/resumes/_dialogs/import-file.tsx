@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { t } from "@lingui/macro";
 import { Plus, Spinner } from "@phosphor-icons/react";
-import { createResumeSchema, ImportFileDto, importFileSchema } from "@reactive-resume/dto";
+import { ImportFileDto } from "@reactive-resume/dto";
 import {
   Button,
   Dialog,
@@ -25,7 +25,7 @@ import {
   SelectValue,
   Separator,
 } from "@reactive-resume/ui";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z, ZodError } from "zod";
 
@@ -35,8 +35,6 @@ import { importLinkedinResume } from "@/client/services/resume/import-linkedin";
 import { useDialog } from "@/client/stores/dialog";
 
 const formSchema = z.object({
-  ...createResumeSchema.shape,
-  ...importFileSchema.shape,
   file: z.instanceof(File),
   type: z.enum(["pdf", "png", "jpg", "jpeg"]),
 });
@@ -55,13 +53,14 @@ type FormValues = z.infer<typeof formSchema>;
 export const ImportFileDialog = () => {
   const { isOpen, close } = useDialog<ImportFileDto[]>("import-file");
   const { importFileResume, loading } = useImportFileResume();
+  const [linkedinLoading, setLinkedinLoading] = useState(false);
   const { toast } = useToast();
+
+  const isLoading = loading || linkedinLoading;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      slug: "",
       file: undefined,
       type: "pdf",
     },
@@ -86,6 +85,7 @@ export const ImportFileDialog = () => {
   }, [filetype]);
 
   const onLinkedinImport = async () => {
+    setLinkedinLoading(true);
     try {
       const { linkedinUrl } = formLinkedinSchema.parse(linkedinForm.getValues());
       await importLinkedinResume({ linkedinURL: linkedinUrl });
@@ -103,19 +103,24 @@ export const ImportFileDialog = () => {
           description: error.message,
         });
       }
+    } finally {
+      setLinkedinLoading(false);
     }
   };
 
   const onSubmit = async (values: FormValues) => {
-    const file = values.file;
-    const base64 = await fileToBase64(file);
+    try {
+      const file = values.file;
+      const base64 = await fileToBase64(file);
 
-    await importFileResume({
-      file: base64.split(",")[1],
-      type: values.type,
-    });
-
-    close();
+      await importFileResume({
+        file: base64.split(",")[1],
+        type: values.type,
+      });
+      close();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -150,8 +155,8 @@ export const ImportFileDialog = () => {
         </Form>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" disabled={loading} onClick={onLinkedinImport}>
-            {loading && <Spinner size={16} className="me-2 animate-spin" />}
+          <Button type="button" disabled={isLoading} onClick={onLinkedinImport}>
+            {isLoading && <Spinner size={16} className="me-2 animate-spin" />}
             {t`Import`}
           </Button>
         </div>
@@ -220,8 +225,8 @@ export const ImportFileDialog = () => {
 
             <DialogFooter>
               <div className="flex items-center">
-                <Button type="submit" disabled={loading} className="rounded-r-none">
-                  {loading && <Spinner className="me-2 animate-spin" />}
+                <Button type="submit" disabled={isLoading} className="rounded-r-none">
+                  {isLoading && <Spinner className="me-2 animate-spin" />}
                   {t`Create`}
                 </Button>
               </div>
