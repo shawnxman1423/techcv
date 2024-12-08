@@ -29,13 +29,10 @@ import {
   defaultUrl,
   Education,
   Experience,
-  experienceSchema,
   Language,
-  referenceSchema,
   ResumeData,
   Sections,
-  Skill,
-  skillSchema,
+  Skill
 } from "@reactive-resume/schema";
 import type { DeepPartial } from "@reactive-resume/utils";
 import { ErrorMessage, generateRandomName, kebabCase } from "@reactive-resume/utils";
@@ -88,7 +85,16 @@ export class ResumeService {
       prompt: `Help me select the top 5 skills for this job application from my existing list of skills. for the skill level please put 4 or 5 but nothing less.
       here is my list of skills: ${JSON.stringify(existingSkills)},
       here is the job description: ${jobDescription}`,
-      schema: z.object({ items: z.array(skillSchema) }),
+      schema: z.object({
+        items: z.array(
+          z.object({
+            name: z.string(),
+            description: z.string(),
+            level: z.number().min(0).max(5).default(1),
+            keywords: z.array(z.string()).default([]),
+          }),
+        ),
+      }),
     });
 
     const betterSummaryPromise = generateObject({
@@ -108,7 +114,15 @@ export class ResumeService {
       prompt: `Help me select the top 3 references for this job application from my existing list of references. do not make up any new one if it doesn't exist. if empty, leave it empty.,
       here is my list of references: ${JSON.stringify(existingReferences)},
       here is the job description: ${jobDescription}`,
-      schema: z.object({ items: z.array(referenceSchema) }),
+      schema: z.object({
+        items: z.array(
+          z.object({
+            name: z.string().min(1),
+            description: z.string(),
+            summary: z.string(),
+          }),
+        ),
+      }),
     });
 
     const betterExperiencesPromise = generateObject({
@@ -118,7 +132,17 @@ export class ResumeService {
       prompt: `Help me refine my job experiences for this job application. if the experience is not fitted to the job, try and make the summary as fitted as possible but don't exaggerate. for the url, select a nice label for the link.,
       here is my current job experiences: ${JSON.stringify(existingExperiences)},
       here is the job description: ${jobDescription}`,
-      schema: z.object({ items: z.array(experienceSchema) }),
+      schema: z.object({
+        items: z.array(
+          z.object({
+            company: z.string().min(1),
+            position: z.string(),
+            location: z.string(),
+            date: z.string(),
+            summary: z.string(),
+          }),
+        ),
+      }),
     });
 
     const betterHeadlinePromise = generateObject({
@@ -141,9 +165,26 @@ export class ResumeService {
       ]);
 
     const newSummary = { ...existingSummary, content: betterSummary.object.result };
-    const newSkills = { ...existingSkills, items: relevantSkills.object.items };
-    const newReferences = { ...existingReferences, items: relevantReferences.object.items };
-    const newExperiences = { ...existingExperiences, items: betterExperiences.object.items };
+    const newSkills = {
+      ...existingSkills,
+      items: relevantSkills.object.items.map((item) => ({ ...item, visible: true })),
+    };
+    const newReferences = {
+      ...existingReferences,
+      items: relevantReferences.object.items.map((item) => ({
+        ...item,
+        visible: true,
+        url: defaultUrl,
+      })),
+    };
+    const newExperiences = {
+      ...existingExperiences,
+      items: betterExperiences.object.items.map((item) => ({
+        ...item,
+        visible: true,
+        url: defaultUrl,
+      })),
+    };
 
     const data = deepmerge(
       newResumeData,
